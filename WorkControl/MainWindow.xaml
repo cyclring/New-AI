@@ -1,0 +1,89 @@
+<Window x:Class="WorkControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AI 어시스턴트" Width="1180" Height="800" MinWidth="780" MinHeight="520"
+        Background="#FFFFFF" Foreground="#222222" FontFamily="Malgun Gothic" FontSize="14"
+        WindowStartupLocation="CenterScreen" Closing="OnClosing">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="11,6"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
+            <Setter Property="Background" Value="#F2F2F2"/>
+            <Setter Property="BorderBrush" Value="#E3E3E3"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="BorderBrush" Value="#DDDDDD"/>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="236"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Border Background="#F5F5F5" BorderBrush="#E7E7E7" BorderThickness="0,0,1,0" Padding="14">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top">
+                    <TextBlock Text="AI 어시스턴트" FontSize="20" FontWeight="SemiBold" Margin="0,3,0,18"/>
+                    <Button x:Name="NewChat" Content="＋  새 채팅" HorizontalContentAlignment="Left" Click="StartNewChat"/>
+                    <Button x:Name="OpenProject" Content="＋  폴더 열기" HorizontalContentAlignment="Left"
+                            Click="BrowseFolder" Margin="0,8,6,0"/>
+                    <TextBlock Text="채팅" Foreground="#666666" FontSize="12" Margin="0,22,0,8"/>
+                </StackPanel>
+                <Expander DockPanel.Dock="Bottom" Header="CLI 설정" Margin="0,10,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Claude" Margin="0,6,0,2"/>
+                        <TextBox x:Name="ClaudeExe" AutomationProperties.Name="Claude CLI"/>
+                        <TextBlock Text="Codex" Margin="0,6,0,2"/>
+                        <TextBox x:Name="CodexExe" AutomationProperties.Name="Codex CLI"/>
+                    </StackPanel>
+                </Expander>
+                <ListBox x:Name="Chats" Background="Transparent" BorderThickness="0"
+                         DisplayMemberPath="Title" SelectionChanged="ChangeChat"/>
+            </DockPanel>
+        </Border>
+        <Grid Grid.Column="1" Margin="24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <DockPanel Margin="0,0,0,14" LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button x:Name="OpenWork" Content="작업 폴더" Click="OpenWorkFolder" IsEnabled="False"/>
+                    <Button x:Name="SavePatch" Content="변경분 저장" Click="ExportPatch" IsEnabled="False"/>
+                    <Button x:Name="CleanWork" Content="작업 폴더 정리" Click="CleanWorkFolder" IsEnabled="False" Margin="0"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock x:Name="ChatTitle" FontWeight="SemiBold" FontSize="16" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="ProjectPath" Foreground="#666666" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </DockPanel>
+            <ScrollViewer x:Name="Transcript" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="Messages" MaxWidth="860" Margin="0,0,12,10"/>
+            </ScrollViewer>
+            <StackPanel Grid.Row="2" MaxWidth="860">
+                <TextBlock x:Name="Status" Foreground="#5D6068" Margin="2,0,0,8" TextWrapping="Wrap"/>
+                <Border BorderThickness="1" BorderBrush="#DFDFDF" CornerRadius="10" Padding="8">
+                    <StackPanel>
+                        <TextBox x:Name="Prompt" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="62" MaxHeight="160"
+                                 BorderThickness="0" VerticalScrollBarVisibility="Auto" KeyDown="SubmitWithKeyboard"
+                                 AutomationProperties.Name="어시에게 메시지 보내기"/>
+                        <DockPanel LastChildFill="False">
+                            <Button x:Name="Send" DockPanel.Dock="Right" Content="보내기 ↑" Click="SendMessage" Margin="0"/>
+                            <Button x:Name="Stop" DockPanel.Dock="Right" Content="중지" Click="StopMessage" IsEnabled="False"/>
+                            <CheckBox x:Name="EditMode" Content="코드 작업" VerticalAlignment="Center" Margin="8,0,12,0"
+                                      ToolTip="선택한 프로젝트의 별도 작업 폴더에서 수정합니다."/>
+                            <ComboBox x:Name="WriterRole" Margin="0,0,12,0" Width="116" SelectedIndex="0"
+                                      ToolTip="코드 작업의 구현 담당" SelectionChanged="ChangeWriterRole">
+                                <ComboBoxItem Content="구현 · Claude"/>
+                                <ComboBoxItem Content="구현 · Codex"/>
+                            </ComboBox>
+                            <TextBlock Text="Claude · Codex" Foreground="#666666" VerticalAlignment="Center" FontSize="12"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
