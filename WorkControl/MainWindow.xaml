@@ -1,7 +1,7 @@
 <Window x:Class="WorkControl.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="AI 어시스턴트" Width="1180" Height="800" MinWidth="760" MinHeight="520"
+        Title="AI 어시스턴트" Icon="Assi.ico" Width="1180" Height="800" MinWidth="760" MinHeight="520"
         Background="#F4F2EF" Foreground="#252528" FontFamily="Segoe UI, Malgun Gothic" FontSize="14"
         WindowStartupLocation="CenterScreen" Closing="OnClosing">
     <Window.Resources>
