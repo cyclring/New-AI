@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Win32;
 
 namespace WorkControl;
@@ -116,7 +117,17 @@ public partial class MainWindow : Window
 
     private async void SubmitWithKeyboard(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter || Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
+        var ime = e.Key == Key.ImeProcessed;
+        if ((ime ? e.ImeProcessedKey : e.Key) != Key.Enter || e.IsRepeat)
+            return;
+        if (ime)
+        {
+            // Let the input method commit the composed text before reading the editor.
+            if (Keyboard.Modifiers == ModifierKeys.None)
+                await Dispatcher.InvokeAsync(Submit, DispatcherPriority.Background).Task.Unwrap();
+            return;
+        }
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             return;
         e.Handled = true;
         await Submit();
@@ -196,7 +207,7 @@ public partial class MainWindow : Window
             }));
             entry.Answer = await flow.Reply(request, history, edit ? active.Workspace : null, writer, cancellation.Token);
             ShowMessage("어시", entry.Answer, false);
-            Status.Text = "완료";
+            Status.Text = "";
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
@@ -314,17 +325,27 @@ public partial class MainWindow : Window
     private void ShowMessage(string name, string text, bool user)
     {
         var bubble = new StackPanel();
-        bubble.Children.Add(new TextBlock { Text = name, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5) });
+        if (!user)
+            bubble.Children.Add(new TextBlock
+            {
+                Text = name, FontWeight = FontWeights.SemiBold, Foreground = Brushes.DimGray,
+                FontSize = 12, Margin = new Thickness(0, 0, 0, 5)
+            });
         bubble.Children.Add(new TextBox
         {
             Text = text, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, BorderThickness = new Thickness(0),
-            Background = Brushes.Transparent, Padding = new Thickness(0), IsUndoEnabled = false
+            Background = Brushes.Transparent, Padding = new Thickness(0), IsUndoEnabled = false,
+            FontSize = 14.5, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled
         });
         Messages.Children.Add(new Border
         {
-            Child = bubble, CornerRadius = new CornerRadius(10), Padding = new Thickness(12),
-            Background = user ? new SolidColorBrush(Color.FromRgb(244, 244, 244)) : Brushes.White,
-            Margin = new Thickness(user ? 48 : 0, 8, 0, 8)
+            Child = bubble, CornerRadius = new CornerRadius(15),
+            Padding = user ? new Thickness(15, 10, 15, 10) : new Thickness(0),
+            Background = user ? new SolidColorBrush(Color.FromRgb(242, 241, 240)) : Brushes.Transparent,
+            HorizontalAlignment = user ? HorizontalAlignment.Right : HorizontalAlignment.Stretch,
+            MaxWidth = user ? 580 : double.PositiveInfinity,
+            Margin = user ? new Thickness(30, 9, 0, 12) : new Thickness(0, 9, 0, 20)
         });
         ScrollToBottom();
     }
@@ -334,9 +355,12 @@ public partial class MainWindow : Window
         var box = new TextBox
         {
             IsReadOnly = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 290,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto, IsUndoEnabled = false
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto, IsUndoEnabled = false,
+            Background = new SolidColorBrush(Color.FromRgb(250, 249, 248)),
+            BorderBrush = new SolidColorBrush(Color.FromRgb(233, 232, 230)), Padding = new Thickness(11),
+            FontSize = 12.5
         };
-        Messages.Children.Add(new Expander { Header = "협업 과정 · Claude와 Codex", Content = box, Margin = new Thickness(12, 5, 0, 5) });
+        Messages.Children.Add(new Expander { Header = "협업 과정", Content = box, Margin = new Thickness(0, 2, 0, 5) });
         return box;
     }
 
